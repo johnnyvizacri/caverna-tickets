@@ -29,7 +29,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* BARRA AMARELA (bg-yellow-500) */}
+      {/* BARRA AMARELA */}
       <nav className="w-full h-20 bg-yellow-500 flex items-center justify-between px-6 border-b border-black/10 relative z-30">
         
         {/* --- LADO ESQUERDO: LOGO --- */}
@@ -44,14 +44,24 @@ export default function Navbar() {
         {/* --- LADO DIREITO: MENU --- */}
         <div className="flex items-center gap-4 md:gap-6 text-sm font-bold">
             
-            {/* Link PRETO para aparecer no amarelo */}
+            {/* --- NOVO: BOTÃO LOCALIZAÇÃO --- */}
+            <a 
+              href="https://maps.app.goo.gl/8KUuxGQtDqUQvN7v8" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-black hover:text-gray-700 transition flex items-center gap-1 uppercase"
+            >
+              📍 Localização
+            </a>
+
+            {/* Link MEUS INGRESSOS */}
             <Link href="/meus-ingressos" className="text-black hover:text-gray-700 transition">
               MEUS INGRESSOS
             </Link>
 
             <div className="h-4 w-px bg-black/20 hidden md:block"></div>
 
-            {/* --- BOTÃO STAFF (Cor do botão aqui: bg-black) --- */}
+            {/* --- BOTÃO STAFF --- */}
             <div className="relative">
               <button 
                 onClick={handleStaffClick}
