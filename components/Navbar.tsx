@@ -9,7 +9,7 @@ export default function Navbar() {
     <nav className="w-full h-20 bg-black flex items-center justify-between px-6 border-b border-white/10">
       
       {/* --- LADO ESQUERDO: APENAS O LOGO --- */}
-      <Link href="/" className="relative h-16 w-16"> 
+      <Link href="/" className="relative h-100 w-50"> 
         {/* Ajuste h-16 e w-16 para o tamanho que quiser do logo */}
         <Image 
           src="/logo.png"  // Certifique-se que o nome do arquivo na pasta public está igual
