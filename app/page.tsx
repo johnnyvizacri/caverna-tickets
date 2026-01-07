@@ -25,26 +25,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#FFB300] text-black font-sans flex flex-col">
       
-      {/* --- CABEÇALHO --- */}
-      <header className="flex flex-col md:flex-row justify-between items-center pt-8 px-8 max-w-7xl mx-auto w-full gap-4">
-        <div className="w-32 flex justify-center md:justify-start">
-           {/* Trocamos a tag img complexa por um texto simples caso a imagem falhe */}
-           <div className="font-black text-2xl tracking-tighter border-4 border-black p-2 rounded-xl">
-             A CAVERNA
-           </div>
-        </div>
-
-        <h1 className="text-xl font-extrabold uppercase tracking-widest text-center">
-          Agenda da Semana
-        </h1>
-
-        <div className="flex items-center gap-6 font-bold text-sm uppercase">
-          <Link href="/meus-ingressos" className="bg-white text-black px-6 py-3 rounded-full hover:bg-gray-100 transition shadow-sm">
-            Minha Conta
-          </Link>
-        </div>
-      </header>
-
+      
       {/* --- LISTA DE EVENTOS --- */}
       <div className="flex-grow">
         <div className="max-w-6xl mx-auto p-8 mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
