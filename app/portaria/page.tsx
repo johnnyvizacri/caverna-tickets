@@ -9,18 +9,36 @@ const supabase = createClient(
 )
 
 export default function Portaria() {
+  // Estados para controlar Evento e Lista
+  const [events, setEvents] = useState<any[]>([])
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  
   const [tickets, setTickets] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [showScanner, setShowScanner] = useState(false)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
-  // Busca ingressos
-  const fetchTickets = async () => {
+  // 1. Carregar a lista de eventos ativos ao abrir a página
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const { data } = await supabase
+        .from('events')
+        .select('*')
+        .eq('active', true)
+        .order('date', { ascending: false }) // Eventos mais recentes primeiro
+      setEvents(data || [])
+    }
+    fetchEvents()
+  }, [])
+
+  // 2. Busca ingressos APENAS do evento selecionado
+  const fetchTickets = async (eventId: string) => {
     setLoading(true)
     const { data } = await supabase
       .from('tickets')
       .select('*, events(title), batches(name)')
+      .eq('event_id', eventId) // <--- O PULO DO GATO: Filtra pelo evento!
       .or('status.eq.paid,status.eq.used')
       .order('customer_name', { ascending: true })
     
@@ -28,31 +46,30 @@ export default function Portaria() {
     setLoading(false)
   }
 
-  useEffect(() => {
-    fetchTickets()
-  }, [])
+  // Quando escolhe um evento, carrega a lista dele
+  const handleSelectEvent = (id: string) => {
+    setSelectedEventId(id)
+    fetchTickets(id)
+  }
 
-  // Configura o Scanner quando o botão é clicado
+  // Configura o Scanner (igual antes)
   useEffect(() => {
     if (showScanner && !scannerRef.current) {
-      // Pequeno delay para o elemento HTML existir
       setTimeout(() => {
         const scanner = new Html5QrcodeScanner(
           "reader", 
           { fps: 10, qrbox: 250 },
-          /* verbose= */ false
+          false
         )
         
         scanner.render((decodedText) => {
-          // QUANDO LER O QR CODE:
-          setSearch(decodedText) // Joga o código na busca
-          setShowScanner(false)  // Fecha a câmera
-          scanner.clear()        // Limpa o scanner
+          setSearch(decodedText) 
+          setShowScanner(false)  
+          scanner.clear()        
           scannerRef.current = null
-          alert(`QR Code Lido: ${decodedText.slice(0,5)}...`) // Feedback visual
-        }, (error) => {
-          // Erros de leitura (normal enquanto procura) ignora
-        })
+          // Toca um som ou vibra se possível (opcional)
+          if (navigator.vibrate) navigator.vibrate(200)
+        }, (error) => { console.warn(error) })
 
         scannerRef.current = scanner
       }, 100)
@@ -61,19 +78,21 @@ export default function Portaria() {
 
   // Função de Check-in
   const handleCheckIn = async (id: string, currentStatus: boolean) => {
+    // Se tentar dar check-in em alguém que já entrou, pede confirmação para desfazer
     if (currentStatus) {
-      if(!confirm('Essa pessoa já entrou. Desmarcar entrada?')) return
+      if(!confirm('ATENÇÃO: Essa pessoa JÁ ENTROU. Deseja cancelar a entrada dela?')) return
     }
+
     const { error } = await supabase
       .from('tickets')
       .update({ checked_in: !currentStatus })
       .eq('id', id)
 
     if (error) alert('Erro ao atualizar')
-    else fetchTickets()
+    else if (selectedEventId) fetchTickets(selectedEventId) // Recarrega a lista
   }
 
-  // Filtro
+  // Filtro de busca na tela
   const filteredTickets = tickets.filter(t => {
     const term = search.toLowerCase().trim()
     return (
@@ -83,62 +102,119 @@ export default function Portaria() {
     )
   })
 
+  // --- TELA 1: SELEÇÃO DE EVENTO ---
+  if (!selectedEventId) {
+    return (
+      <main className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
+        <h1 className="text-3xl font-bold text-purple-500 mb-8 mt-10">Portaria A Caverna</h1>
+        <p className="text-gray-400 mb-6">Selecione o evento de hoje:</p>
+        
+        <div className="w-full max-w-md space-y-4">
+          {events.map(event => (
+            <button
+              key={event.id}
+              onClick={() => handleSelectEvent(event.id)}
+              className="w-full bg-gray-900 border border-gray-700 hover:border-purple-500 p-6 rounded-xl text-left transition transform hover:scale-105"
+            >
+              <h3 className="text-xl font-bold">{event.title}</h3>
+              <p className="text-gray-400 text-sm mt-1">
+                {new Date(event.date).toLocaleDateString('pt-BR')}
+              </p>
+            </button>
+          ))}
+          
+          {events.length === 0 && (
+            <p className="text-center text-gray-500">Nenhum evento ativo encontrado.</p>
+          )}
+        </div>
+      </main>
+    )
+  }
+
+  // --- TELA 2: LISTA E SCANNER (Check-in) ---
   return (
     <main className="min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-purple-500">Portaria</h1>
-          <button onClick={fetchTickets} className="text-sm bg-gray-700 px-3 py-1 rounded">Atualizar</button>
+        {/* Cabeçalho com botão de voltar */}
+        <div className="flex justify-between items-center mb-6 bg-black p-4 rounded-lg">
+          <div>
+            <p className="text-xs text-gray-400">Controlando:</p>
+            <h1 className="text-xl font-bold text-purple-500">
+              {events.find(e => e.id == selectedEventId)?.title}
+            </h1>
+          </div>
+          <button 
+            onClick={() => { setSelectedEventId(null); setSearch(''); }}
+            className="text-sm bg-gray-800 text-gray-300 px-3 py-2 rounded hover:bg-gray-700"
+          >
+            ← Trocar Evento
+          </button>
         </div>
 
-        {/* Botão para ativar Câmera */}
+        {/* Botão Câmera */}
         {!showScanner ? (
            <button 
              onClick={() => { setSearch(''); setShowScanner(true); }}
-             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-6 flex items-center justify-center gap-2"
+             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-6 flex items-center justify-center gap-2 shadow-lg shadow-blue-900/50"
            >
-             📷 Abrir Câmera para Ler QR Code
+             📷 LER QR CODE
            </button>
         ) : (
-          <div className="mb-6 bg-black p-4 rounded-lg">
+          <div className="mb-6 bg-black p-4 rounded-lg border border-gray-700">
              <div id="reader" className="w-full"></div>
              <button 
-               onClick={() => { setShowScanner(false); window.location.reload(); }} // Reload forçado para limpar a câmera se travar
-               className="mt-4 w-full bg-red-600 py-2 rounded text-white"
+               onClick={() => { setShowScanner(false); window.location.reload(); }} 
+               className="mt-4 w-full bg-red-600 py-2 rounded text-white font-bold"
              >
-               Fechar Câmera
+               FECHAR CÂMERA
              </button>
           </div>
         )}
 
+        {/* Campo de Busca Manual */}
         <input 
           type="text" 
-          placeholder="Ou digite nome / código aqui..." 
+          placeholder="Digitar nome ou código..." 
           className="w-full p-4 rounded-lg bg-gray-800 border border-gray-700 text-lg mb-6 focus:border-purple-500 outline-none"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
 
+        {/* Lista de Pessoas */}
         <div className="space-y-3">
+          {/* Contador */}
+          <div className="flex justify-between text-sm text-gray-400 px-2 mb-2">
+            <span>Na lista: {tickets.length}</span>
+            <span className="text-green-400 font-bold">Já entraram: {tickets.filter(t => t.checked_in).length}</span>
+          </div>
+
           {filteredTickets.map((t) => (
-            <div key={t.id} className={`p-4 rounded-lg border flex justify-between items-center ${t.checked_in ? 'bg-green-900/30 border-green-500' : 'bg-gray-800 border-gray-700'}`}>
+            <div key={t.id} className={`p-4 rounded-lg border flex justify-between items-center ${t.checked_in ? 'bg-green-900/20 border-green-500/50' : 'bg-gray-800 border-gray-700'}`}>
               <div>
-                <h3 className="font-bold text-lg">{t.customer_name}</h3>
+                <h3 className={`font-bold text-lg ${t.checked_in ? 'text-green-400' : 'text-white'}`}>
+                  {t.customer_name}
+                </h3>
                 <p className="text-sm text-gray-400">{t.batches?.name}</p>
-                <p className="text-xs text-gray-500">ID: ...{t.id.slice(-6)}</p>
+                <p className="text-xs text-gray-600 font-mono mt-1">ID: ...{t.id.slice(-6)}</p>
               </div>
+              
               <button 
                 onClick={() => handleCheckIn(t.id, t.checked_in)}
-                className={`px-6 py-3 rounded font-bold transition ${t.checked_in ? 'bg-red-900 text-red-200' : 'bg-green-600 text-white'}`}
+                className={`px-4 py-3 rounded font-bold transition shadow-lg min-w-[100px] ${
+                  t.checked_in 
+                    ? 'bg-gray-800 text-gray-400 border border-gray-600 hover:bg-red-900/50 hover:text-red-400' 
+                    : 'bg-green-600 text-white hover:bg-green-500 hover:scale-105'
+                }`}
               >
-                {t.checked_in ? 'DESFAZER' : 'ENTROU'}
+                {t.checked_in ? 'DESFAZER' : 'ENTRAR'}
               </button>
             </div>
           ))}
           
           {search && filteredTickets.length === 0 && (
-             <div className="text-center p-8 bg-red-900/20 text-red-400 rounded-lg">
-                ❌ Ninguém encontrado com este código ou nome.
+             <div className="text-center p-8 bg-red-900/20 text-red-400 rounded-lg border border-red-900/50">
+                <p className="font-bold text-xl mb-2">❌ Não encontrado</p>
+                <p className="text-sm">Verifique se a pessoa comprou para ESTE evento.</p>
              </div>
           )}
         </div>
