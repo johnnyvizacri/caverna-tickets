@@ -6,21 +6,19 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="w-full h-20 bg-black flex items-center justify-between px-6 border-b border-white/10">
+    <nav className="w-full h-20 bg-black flex items-center justify-between px-6 border-b border-white/10 relative">
       
       {/* --- LADO ESQUERDO: APENAS O LOGO --- */}
-      <Link href="/" className="relative h-16 w-16"> 
-        {/* Ajuste h-16 e w-16 para o tamanho que quiser do logo */}
-        <Image 
-          src="/logo.png"  // Certifique-se que o nome do arquivo na pasta public está igual
+      <Link href="/"> 
+        <img 
+          src="/logo.png" 
           alt="A Caverna"
-          fill
-          className="object-contain" // Isso garante que o logo não estique
+          className="h-14 w-auto object-contain hover:opacity-90 transition-opacity"
         />
       </Link>
 
-        {/* Links do Menu */}
-        <div className="flex items-center gap-4 md:gap-6 text-sm font-bold">
+      {/* --- LADO DIREITO: MENU --- */}
+      <div className="flex items-center gap-4 md:gap-6 text-sm font-bold">
           
           <Link href="/meus-ingressos" className="text-gray-300 hover:text-white transition">
             MEUS INGRESSOS
@@ -58,9 +56,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          {/* ----------------------------------- */}
-
-        </div>
       </div>
 
       {/* Clicar fora fecha o menu (máscara invisível) */}
