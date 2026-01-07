@@ -17,7 +17,7 @@ export default function Navbar() {
   }
 
   const verifyPassword = () => {
-    if (password === 'admin123') {
+    if (password === 'Caverna69@') {
       setIsAuthenticated(true)
       setShowPasswordModal(false)
       setIsOpen(true)
@@ -56,7 +56,7 @@ export default function Navbar() {
               {/* Botão roxo mantém destaque */}
               <button 
                 onClick={handleStaffClick}
-                className="flex items-center gap-2 bg-purple-900 border border-purple-900 text-white px-4 py-2 rounded hover:bg-purple-800 transition shadow-md"
+                className="flex items-center gap-2 bg-black-900 border border-black-900 text-white px-4 py-2 rounded hover:bg-black-800 transition shadow-md"
               >
                 {isAuthenticated ? '🔓' : '🔐'} STAFF <span className="text-xs">▼</span>
               </button>
