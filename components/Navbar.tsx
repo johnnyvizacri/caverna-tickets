@@ -17,7 +17,7 @@ export default function Navbar() {
   }
 
   const verifyPassword = () => {
-    if (password === 'Caverna69@') {
+    if (password === 'admin123') {
       setIsAuthenticated(true)
       setShowPasswordModal(false)
       setIsOpen(true)
@@ -29,7 +29,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* MUDANÇA AQUI: bg-yellow-500 e border-black/10 */}
+      {/* BARRA AMARELA (bg-yellow-500) */}
       <nav className="w-full h-20 bg-yellow-500 flex items-center justify-between px-6 border-b border-black/10 relative z-30">
         
         {/* --- LADO ESQUERDO: LOGO --- */}
@@ -44,19 +44,18 @@ export default function Navbar() {
         {/* --- LADO DIREITO: MENU --- */}
         <div className="flex items-center gap-4 md:gap-6 text-sm font-bold">
             
-            {/* MUDANÇA AQUI: Text-black para aparecer no amarelo */}
+            {/* Link PRETO para aparecer no amarelo */}
             <Link href="/meus-ingressos" className="text-black hover:text-gray-700 transition">
               MEUS INGRESSOS
             </Link>
 
             <div className="h-4 w-px bg-black/20 hidden md:block"></div>
 
-            {/* --- BOTÃO STAFF --- */}
+            {/* --- BOTÃO STAFF (Cor do botão aqui: bg-black) --- */}
             <div className="relative">
-              {/* Botão roxo mantém destaque */}
               <button 
                 onClick={handleStaffClick}
-                className="flex items-center gap-2 bg-black-900 border border-black-900 text-white px-4 py-2 rounded hover:bg-black-800 transition shadow-md"
+                className="flex items-center gap-2 bg-black border border-black text-white px-4 py-2 rounded hover:bg-gray-800 transition shadow-md"
               >
                 {isAuthenticated ? '🔓' : '🔐'} STAFF <span className="text-xs">▼</span>
               </button>
@@ -109,7 +108,7 @@ export default function Navbar() {
               </button>
               <button 
                 onClick={verifyPassword}
-                className="flex-1 bg-purple-900 text-white py-2 rounded hover:bg-purple-800 transition font-bold"
+                className="flex-1 bg-black text-white py-2 rounded hover:bg-gray-800 transition font-bold"
               >
                 Entrar
               </button>
