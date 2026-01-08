@@ -66,12 +66,22 @@ export default function Gerenciar() {
   }
 
   // --- 4. DELETAR EVENTO ---
+  // ... (outros códigos que já estão lá em cima) ...
+
+  // 👇 1. ABRA UM ESPAÇO AQUI E COLE A FUNÇÃO DE UPLOAD
+  const uploadImage = async (file: File) => {
+    if (!file) return null
+    const fileName = `${Date.now()}-${file.name}`
+    const { error } = await supabase.storage.from('event-images').upload(fileName, file)
+    if (error) throw error
+    const { data } = supabase.storage.from('event-images').getPublicUrl(fileName)
+    return data.publicUrl
+  }
+
+  // 👇 2. AQUI JÁ EXISTE O SEU CÓDIGO DE DELETAR (NÃO MEXA NELE)
   const handleDeleteEvent = async (id: string) => {
-    if (!confirm('TEM CERTEZA? Isso apaga todos os ingressos e dados desse evento.')) return
-    
-    const { error } = await supabase.from('events').delete().eq('id', id)
-    if (error) alert('Erro: ' + error.message)
-    else fetchEvents()
+    if (!confirm('TEM CERTEZA? ...')) return
+    // ... restante do seu código ...
   }
 
   // --- 5. CRIAR LOTE ---
