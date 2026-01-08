@@ -78,6 +78,29 @@ export default function Gerenciar() {
     return data.publicUrl
   }
 
+  // --- 5. FUNÇÃO DE EDITAR (Cole isso abaixo do uploadImage) ---
+  const handleEditEvent = async (id: string, novoNome: string, novoArquivo?: File) => {
+    try {
+      let urlNova = null
+      
+      // Se tiver arquivo, faz upload
+      if (novoArquivo) {
+        urlNova = await uploadImage(novoArquivo)
+      }
+
+      const atualizacao: any = { nome: novoNome }
+      if (urlNova) atualizacao.banner_url = urlNova
+
+      const { error } = await supabase.from('events').update(atualizacao).eq('id', id)
+      
+      if (error) throw error
+      alert('Atualizado com sucesso!')
+      window.location.reload() // Recarrega a página para mostrar a mudança
+    } catch (error: any) {
+      alert('Erro: ' + error.message)
+    }
+  }
+
   // 👇 2. AQUI JÁ EXISTE O SEU CÓDIGO DE DELETAR (NÃO MEXA NELE)
   const handleDeleteEvent = async (id: string) => {
     if (!confirm('TEM CERTEZA? ...')) return
