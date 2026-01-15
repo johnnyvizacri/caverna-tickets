@@ -17,7 +17,7 @@ export default function Navbar() {
   }
 
   const verifyPassword = () => {
-    if (password === 'admin123') {
+    if (password === 'Caverna69@') {
       setIsAuthenticated(true)
       setShowPasswordModal(false)
       setIsOpen(true)
